@@ -1,3 +1,8 @@
+---
+name: Pull Request Template
+about: 請使用此範本描述你的改動
+---
+
 ## 🚀 變更類型 (Type of Change)
 - [ ] ✨ New feature
 - [ ] 🐛 Bug fix

@@ -1,118 +1,116 @@
+
 :root {
-    --bg-color: #0f172a;
-    --card-bg: #1e293b;
-    --accent: #38bdf8;
-    --text-main: #f8fafc;
-    --text-dim: #94a3b8;
+--bg-color: #0f172a;
+--card-bg: #1e293b;
+--accent: #38bdf8;
+--text-main: #f8fafc;
+--text-dim: #94a3b8;
 }
 
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Inter', 'Noto Sans TC', sans-serif;
 }
 
 body {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--bg-color);
+height: 100vh;
+display: flex;
+justify-content: center;
+align-items: center;
+background-color: var(--bg-color);
 }
 
 .card {
-    background: var(--card-bg);
-    width: 320px;
-    padding: 30px;
-    border-radius: 24px;
-    text-align: center;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+background: var(--card-bg);
+width: 320px;
+padding: 30px;
+border-radius: 24px;
+text-align: center;
+box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+border: 1px solid rgba(255, 255, 255, 0.1);
+overflow: hidden; /* 防止內容溢出 */
 }
 
-/* 頭像圓圈 */
-.avatar {
-    width: 70px;
-    height: 70px;
-    background: linear-gradient(135deg, var(--accent), #818cf8);
-    border-radius: 50%;
-    margin: 0 auto 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2rem;
-    font-weight: bold;
-    color: white;
+
+.avatar-img {
+width: 100px;        
+height: 100px;       
+object-fit: cover;   
+border-radius: 50%;  
+border: 3px solid var(--accent);
+margin: 0 auto 15px; 
+display: block;
 }
 
 .name {
-    color: var(--text-main);
-    font-size: 1.5rem;
-    margin-bottom: 15px;
+color: var(--text-main);
+font-size: 1.5rem;
+margin-bottom: 10px;
 }
 
 .en-name {
-    font-size: 1.1rem;
-    color: var(--accent);
-    font-weight: 300;
+font-size: 1.1rem;
+color: var(--accent);
+font-weight: 300;
+margin-left: 5px;
 }
 
-/* 標籤樣式 */
 .tag-container {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
+margin-bottom: 15px;
 }
 
 .tag {
-    background: rgba(56, 189, 248, 0.1);
-    color: var(--accent);
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    border: 1px solid rgba(56, 189, 248, 0.2);
+background: rgba(56, 189, 248, 0.1);
+color: var(--accent);
+padding: 4px 12px;
+border-radius: 20px;
+font-size: 0.85rem;
+border: 1px solid rgba(56, 189, 248, 0.2);
 }
 
 .divider {
-    height: 1px;
-    background: rgba(255, 255, 255, 0.1);
-    margin: 20px 0;
+height: 1px;
+background: rgba(255, 255, 255, 0.1);
+margin: 20px 0;
 }
 
 .bio {
-    text-align: left;
-    margin-bottom: 25px;
+text-align: left;
+margin-bottom: 25px;
 }
 
 .bio strong {
-    color: var(--text-main);
-    font-size: 0.9rem;
-    display: block;
-    margin-bottom: 5px;
+color: var(--text-main);
+font-size: 0.9rem;
+display: block;
+margin-top: 12px;
+}
+
+.bio strong:first-child {
+margin-top: 0;
 }
 
 .desc {
-    color: var(--text-dim);
-    font-size: 0.9rem;
-    line-height: 1.5;
+color: var(--text-dim);
+font-size: 0.95rem;
+margin-top: 2px;
 }
 
-/* 按鈕 */
 .btn {
-    width: 100%;
-    padding: 12px;
-    border-radius: 12px;
-    border: none;
-    background: var(--accent);
-    color: #0f172a;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
+width: 100%;
+padding: 12px;
+border-radius: 12px;
+border: none;
+background: var(--accent);
+color: #0f172a;
+font-weight: bold;
+cursor: pointer;
+transition: 0.3s;
 }
 
-.btn:hover {
-    background: #7dd3fc;
-    transform: scale(1.02);
+.btn:hover {zbackground: #7dd3fc;
+transform: translateY(-2px);
 }
