@@ -13,11 +13,13 @@ model = ChatOpenAI(
 )
 user_input = input("請輸入topic: ")
 
-prompt1 = ChatPromptTemplate.from_messages([("human", "請用【幽默風】針對主題 {topic} 寫一篇貼文, 內容嚴格限制在 50 個字以內")])
-prompt2 = ChatPromptTemplate.from_messages([("human", "請用【專業風】針對主題 {topic} 寫一篇貼文, 內容嚴格限制在 50 個字以內")])
+prompt1 = ChatPromptTemplate.from_messages([("human", "請用【幽默風】針對主題 {topic} 寫一篇貼文")])
+prompt2 = ChatPromptTemplate.from_messages([("human", "請用【專業風】針對主題 {topic} 寫一篇貼文")])
 
-chain1 = prompt1 | model | StrOutputParser()
-chain2 = prompt2 | model | StrOutputParser()
+parser = StrOutputParser()
+
+chain1 = prompt1 | model.bind(max_tokens=20, extra_body={"n_predict":20})| parser
+chain2 = prompt2 | model.bind(max_tokens=20, extra_body={"n_predict":20})| parser
 
 parallel_agent = RunnableParallel(style_humor=chain1, style_professional=chain2)
 
