@@ -1,3 +1,4 @@
+import time
 from typing import TypedDict, List
 from langgraph.graph import StateGraph, END
 from langchain_openai import ChatOpenAI
@@ -8,7 +9,7 @@ llm = ChatOpenAI(
     base_url="https://ws-02.wade0426.me/v1",
     api_key="day4hw",
     model="google/gemma-2-27b-it",
-    temperature=0.1
+    temperature=0
 )
 
 
@@ -36,10 +37,10 @@ def node_check_cache(state: AgentState):
 
 
 def node_decision(state: AgentState):
-    print("\n[Node] 決策層評估")
+    print("\n* [Node] 決策層評估")
     kb = state.get("knowledge_base", "無")
 
-    prompt = f"""
+    system_prompt = f"""
     使用者問題: {state['input']}
     目前收集到的資訊: {kb}
 
@@ -47,7 +48,7 @@ def node_decision(state: AgentState):
     - 若足夠，請根據資訊生成回答。
     - 若不足，請回覆 'SEARCH'。
     """
-    response = llm.invoke(prompt).content
+    response = llm.invoke(system_prompt).content
 
     if "SEARCH" in response:
         print("   => 決定：需要更多資訊 (SEARCH)")
@@ -58,29 +59,43 @@ def node_decision(state: AgentState):
 
 
 def node_gen_keywords(state: AgentState):
-    print("\n[Node] 生成關鍵字")
+    print("\n* [Node] 生成關鍵字")
 
-    prompt = f"""
-    任務：針對使用者的問題，生成一個最適合的「搜尋引擎關鍵字」。
+    system_prompt = f"""
+    指令：你是一個搜尋引擎關鍵字產生器。
+    任務：將使用者的問題轉換為一個簡單的 Google 搜尋關鍵字。
 
     使用者問題：{state['input']}
-    已知資訊：{state.get('knowledge_base', '無')}
 
-    限制：
-    1. 只准回傳關鍵字本身。
-    2. 不要回傳任何解釋、不要回傳範例、不要包含 Markdown 符號。
-    3. 嚴禁回覆 <|im_start|> 或類似的標籤。
+    嚴格限制：
+    1. 只准輸出關鍵字 (例如: "Apple stock news")
+    2. 禁止輸出任何標點符號、解釋、前言或後語。
+    3. 禁止輸出 "Here is the keyword" 之類的廢話。
+    4. 直接給答案，不要囉嗦。
     """
 
-    # 呼叫 LLM
-    keyword = llm.invoke(prompt).content
+    print("   (等待 LLM 生成中...)")
+    try:
+        response = llm.invoke(system_prompt, config={"timeout": 10})
+        raw_content = response.content
+    except Exception as e:
+        print(f"* LLM 生成超時或錯誤，使用預設關鍵字。錯誤: {e}")
+        raw_content = state['input']
 
-    keyword = keyword.replace('"', '').replace("'", "").replace("search query:", "").strip()
+    print(f"* [Debug] LLM 原始回應: {raw_content[:100]}...")
 
-    if "\n" in keyword:
-        keyword = keyword.split("\n")[0]
+    keyword = raw_content.replace('"', '').replace("'", "").replace("\n", " ").strip()
 
-    print(f"   => 關鍵字: {keyword}")
+    remove_words = ["search query:", "keyword:", "google search:", "here is"]
+    for word in remove_words:
+        if keyword.lower().startswith(word):
+            keyword = keyword[len(word):].strip()
+
+    if len(keyword) > 30:
+        print(f"   [警告] 關鍵字太長，強制截斷...")
+        keyword = keyword[:30]
+
+    print(f"   => 最終使用關鍵字: {keyword}")
     return {"messages": [f"Query: {keyword}"]}
 
 
@@ -117,14 +132,14 @@ def node_value_check(state: AgentState):
     print("\n[Node] 價值評估")
     content = state.get("vlm_temp_content", "")[:2000]
 
-    prompt = f"""
+    system_prompt = f"""
     使用者問題: {state['input']}
     剛讀取的網頁內容摘要: {content}
 
     請問這段內容對回答使用者問題「有幫助/有價值」嗎？
     請回覆 YES 或 NO。
     """
-    res = llm.invoke(prompt).content.upper()
+    res = llm.invoke(system_prompt).content.upper()
     print(f"   => 評估結果: {res}")
 
     if "YES" in res:
@@ -142,7 +157,7 @@ def node_update_index(state: AgentState):
 
 # draw graph
 workflow = StateGraph(AgentState)
-
+start_time = time.time()
 workflow.add_node("check_cache", node_check_cache)
 workflow.add_node("decision", node_decision)
 workflow.add_node("gen_keywords", node_gen_keywords)
@@ -150,7 +165,7 @@ workflow.add_node("search_tool", node_search_tool)
 workflow.add_node("vlm_process", node_vlm_process)
 workflow.add_node("value_check", node_value_check)
 workflow.add_node("update_index", node_update_index)
-
+end_time = time.time()
 workflow.set_entry_point("check_cache")
 
 # 邏輯連線
@@ -206,10 +221,9 @@ if __name__ == "__main__":
 
     print("\n--- 開始處理 ---")
 
-    # 使用 stream 觀察過程
     for event in app.stream(initial):
         for value in event.values():
-            # 如果節點沒有回傳任何東西 (None)，就跳過，避免報錯
+            # 如果節點沒有回傳任何東西 (None)，就跳過。
             if value and "final_answer" in value:
                 final_output = value["final_answer"]
 
